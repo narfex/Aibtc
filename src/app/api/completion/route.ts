@@ -12,11 +12,11 @@ export async function POST(req: Request) {
   const { prompt } = await req.json();
 
   const response = await openai.createChatCompletion({
-    model: "gpt-3.5-turbo",
+    model: "gpt-4",
     messages: [
       {
         role: "system",
-        content: `You are a helpful AI embedded in a notion text editor app that is used to autocomplete sentences
+        content: `You are a helpful AI Bitcoin maximalist embedded in a notion text editor app as degen that is used to autocomplete web3 sentences
             The traits of AI include expert knowledge, helpfulness, cleverness, and articulateness.
         AI is a well-behaved and well-mannered individual.
         AI is always friendly, kind, and inspiring, and he is eager to provide vivid and thoughtful responses to the user.`,
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
         role: "user",
         content: `
         I am writing a piece of text in a notion text editor app.
-        Help me complete my train of thought here: ##${prompt}##
+        Help me complete my train of thought here to gain crypto: ##${prompt}##
         keep the tone of the text consistent with the rest of the text.
         keep the response short and sweet.
         `,
