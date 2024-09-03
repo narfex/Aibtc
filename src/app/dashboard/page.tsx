@@ -32,6 +32,9 @@ const DashboardPage = async (props: Props) => {
                   Back
                 </Button>
               </Link>
+              <Link href="/exchangeDataPage/page">
+                <Button>Exchange Data</Button>
+              </Link>
               <div className="w-4"></div>
               <h1 className="text-3xl font-bold text-gray-900">My Notes</h1>
               <div className="w-4"></div>
