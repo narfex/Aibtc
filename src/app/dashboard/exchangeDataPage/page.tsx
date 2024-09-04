@@ -9,8 +9,7 @@ const ExchangeDataPage = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // Replace with your API endpoint or service that fetches the data
-                const response = await axios.get("/api/get-exchange-data");
+                const response = await axios.get("/api/getExchangeData");
                 setData(response.data);
             } catch (error) {
                 console.error("Error fetching exchange data:", error);
@@ -41,6 +40,10 @@ const ExchangeDataPage = () => {
                             </h2>
                             <p className="text-sm text-gray-500">Spot Price: ${exchange.spot}</p>
                             <p className="text-sm text-gray-500">Futures Price: ${exchange.futures}</p>
+                            <p className="text-sm text-gray-500">Spot Change: {exchange.spotChange}</p>
+                            <p className="text-sm text-gray-500">Futures Change: {exchange.futuresChange}</p>
+                            <p className="text-sm text-gray-500">Spot Volume: {exchange.spotVolume}</p>
+                            <p className="text-sm text-gray-500">Futures Volume: {exchange.futuresVolume}</p>
                         </div>
                     ))}
                 </div>

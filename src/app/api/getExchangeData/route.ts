@@ -1,44 +1,81 @@
-import type { NextApiRequest, NextApiResponse } from 'next';
-import axios from 'axios';
+import { NextResponse } from 'next/server';
 
-const getExchangeData = async (req: NextApiRequest, res: NextApiResponse) => {
+// Helper function to delay retries
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+export async function GET() {
     try {
         const responses = await Promise.all([
-            axios.get('https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT'),
-            axios.get('https://fapi.binance.com/fapi/v1/ticker/price?symbol=BTCUSDT'),
-            axios.get('https://api.bybit.com/v2/public/tickers?symbol=BTCUSD'),
-            axios.get('https://api.coinbase.com/v2/prices/BTC-USD/spot'),
-            axios.get('https://api.kraken.com/0/public/Ticker?pair=XBTUSD'),
+            fetchWithRetry('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'),
+            fetchWithRetry('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=BTCUSDT'),
+            fetchWithRetry('https://api.coinbase.com/v2/prices/BTC-USD/spot'),
+            fetchWithRetry('https://api.kraken.com/0/public/Ticker?pair=XBTUSD')
         ]);
 
         const data = [
             {
                 name: 'Binance',
-                spot: responses[0].data.price,
-                futures: responses[1].data.price,
-            },
-            {
-                name: 'ByBit',
-                spot: responses[2].data.result[0].last_price, // Use with caution
-                futures: responses[2].data.result[0].last_price, // ByBit uses perpetual contracts
+                spot: responses[0].lastPrice,
+                futures: responses[1].lastPrice,
+                spotChange: responses[0].priceChangePercent,
+                futuresChange: responses[1].priceChangePercent,
+                spotVolume: responses[0].volume,
+                futuresVolume: responses[1].volume
             },
             {
                 name: 'Coinbase',
-                spot: responses[3].data.data.amount,
-                futures: 'N/A', // Futures not available on Coinbase
+                spot: responses[2].data.amount,
+                futures: 'N/A',
+                spotChange: 'N/A',
+                futuresChange: 'N/A',
+                spotVolume: 'N/A',
+                futuresVolume: 'N/A'
             },
             {
                 name: 'Kraken',
-                spot: responses[4].data.result.XXBTZUSD.c[0],
-                futures: 'N/A', // Need API key for Kraken Futures
-            },
+                spot: responses[3].result.XXBTZUSD.c[0],
+                futures: 'N/A',
+                spotChange: 'N/A',
+                futuresChange: 'N/A',
+                spotVolume: 'N/A',
+                futuresVolume: 'N/A'
+            }
         ];
 
-        res.status(200).json(data);
+        return NextResponse.json(data);
     } catch (error) {
-        console.error('Error fetching exchange data:', error);
-        res.status(500).json({ error: 'Failed to fetch exchange data' });
+        console.error('Error fetching exchange data:', error instanceof Error ? error.message : 'Unknown error');
+        return NextResponse.json(
+            { error: 'Failed to fetch exchange data', message: error instanceof Error ? error.message : 'Unknown error' },
+            { status: 500 }
+        );
     }
-};
+}
 
-export default getExchangeData;
+// Function to handle retries with normal fetch
+async function fetchWithRetry(url: string, retries = 3, retryDelay = 3000): Promise<any> {
+    for (let attempt = 0; attempt < retries; attempt++) {
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                if (response.status === 429) { // Rate limited
+                    const retryAfter = response.headers.get('retry-after');
+                    const delayTime = retryAfter ? parseInt(retryAfter) * 1000 : retryDelay;
+                    console.log(`Rate limited. Retrying after ${delayTime} ms...`);
+                    await delay(delayTime);
+                } else {
+                    throw new Error(`Failed with status ${response.status}`);
+                }
+            } else {
+                return await response.json(); // Return the JSON response
+            }
+        } catch (error) {
+            if (attempt < retries - 1) {
+                console.log(`Error fetching data, retrying... (${attempt + 1}/${retries})`);
+                await delay(retryDelay); // Wait before retrying
+            } else {
+                throw new Error(`Failed after ${retries} attempts`);
+            }
+        }
+    }
+}
