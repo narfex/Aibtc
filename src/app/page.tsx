@@ -2,6 +2,7 @@ import TypewriterTitle from "@/components/ui/TypewriterTitle";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import React from "react";
 
 export default function Home() {
   return (
@@ -17,12 +18,15 @@ export default function Home() {
         </h2>
         <div className="mt-8"></div>
 
-        <div className="flex justify-center">
+        <div className="flex flex-col justify-center items-center gap-5">
           <Link href="/dashboard">
             <Button className="bg-green-600">
               Get Started
               <ArrowRight className="ml-2 w-5 h-5" strokeWidth={3} />
             </Button>
+          </Link>
+          <Link href="/dashboard/exchangeDataPage">
+            <Button>Exchange Data <ArrowRight className="ml-2 w-5 h-5" strokeWidth={3} /></Button>
           </Link>
         </div>
       </div>
