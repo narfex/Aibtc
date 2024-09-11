@@ -9,7 +9,10 @@ export async function GET() {
             fetchWithRetry('https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT'),
             fetchWithRetry('https://fapi.binance.com/fapi/v1/ticker/24hr?symbol=BTCUSDT'),
             fetchWithRetry('https://api.coinbase.com/v2/prices/BTC-USD/spot'),
-            fetchWithRetry('https://api.kraken.com/0/public/Ticker?pair=XBTUSD')
+            fetchWithRetry('https://api.kraken.com/0/public/Ticker?pair=XBTUSD'),
+            fetchWithRetry('https://www.okx.com/api/v5/market/ticker?instId=BTC-USDT'),
+            fetchWithRetry('https://api-pub.bitfinex.com/v2/ticker/tBTCUSD'),
+            fetchWithRetry('https://api.huobi.pro/market/detail/merged?symbol=btcusdt')
         ]);
 
         const data = [
@@ -38,6 +41,33 @@ export async function GET() {
                 spotChange: 'N/A',
                 futuresChange: 'N/A',
                 spotVolume: 'N/A',
+                futuresVolume: 'N/A'
+            },
+            {
+                name: 'OKX',
+                spot: responses[4].data[0].last,
+                futures: 'N/A',
+                spotChange: responses[4].data[0].changePercent,
+                futuresChange: 'N/A',
+                spotVolume: responses[4].data[0].volCcy24h,
+                futuresVolume: 'N/A'
+            },
+            {
+                name: 'Bitfinex',
+                spot: responses[5][6], // 6th element is the last price in Bitfinex ticker response
+                futures: 'N/A',
+                spotChange: 'N/A',
+                futuresChange: 'N/A',
+                spotVolume: 'N/A',
+                futuresVolume: 'N/A'
+            },
+            {
+                name: 'Huobi',
+                spot: responses[6].tick.close,
+                futures: 'N/A',
+                spotChange: responses[6].tick.vol, // Using volume as an approximation of change
+                futuresChange: 'N/A',
+                spotVolume: responses[6].tick.amount,
                 futuresVolume: 'N/A'
             }
         ];
